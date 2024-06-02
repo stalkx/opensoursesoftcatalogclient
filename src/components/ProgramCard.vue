@@ -165,6 +165,10 @@ async function deleteComment(comment) {
     .catch(error => console.error(error))
 }
 
+function goToDownload() {
+  window.location.href = props.programDownloadUrl;
+}
+
 onMounted(() => {
   getAverageRating()
   getAllComment()
@@ -225,7 +229,7 @@ watch(commentPage, () => {
         <div class="flex flex-row gap-2 items-center">
           <i class="pi pi-github"></i>
           <h1 class="font-bold">Посиланян на GitHub:</h1>
-          <p>{{ props.programGitHubUrl }}</p>
+          <a :href="props.programGitHubUrl">{{ props.programGitHubUrl }}</a>
         </div>
         <div class="flex flex-row gap-2 items-center">
           <i class="pi pi-calendar-plus"></i>
@@ -236,6 +240,9 @@ watch(commentPage, () => {
           <i class="pi pi-star-fill"></i>
           <h1 class="font-bold">Рейтнг:</h1>
           <Rating v-model:="averageRating" readonly  :cancel="false" />
+        </div>
+        <div class="mt-4 w-full border">
+          <Button class="w-full" label="Завантажити" @click="goToDownload"/>
         </div>
       </div>
     </div>

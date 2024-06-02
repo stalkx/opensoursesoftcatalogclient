@@ -9,8 +9,15 @@ import Paginator from 'primevue/paginator'
 import InputText from 'primevue/inputtext'
 import Dialog from 'primevue/dialog'
 import Password from 'primevue/password'
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast';
 
-const text = ref('')
+
+const toast = useToast();
+
+const showMassage = (text, severity) => {
+  toast.add({ severity: severity, summary: 'Повідомлення', detail: text, life: 3000 });
+};
 
 const programResponse = ref([])
 const pageNumber = ref(0)
@@ -30,12 +37,27 @@ const currentUser = ref({})
 
 const isLogin = ref(false)
 
-const showAboutUser = ref(false)
 
 const loginData = reactive({
   login: '',
   password: ''
 })
+
+const showEditUser = ref(false)
+const showEditUserPassword = ref(false)
+
+
+const editUserDataLogin = ref({})
+const editUserDataPassword = ref({})
+
+
+
+watch(currentUser, () => {
+  editUserDataLogin.value = currentUser.value;
+  editUserDataPassword.value = currentUser.value
+  editUserDataPassword.value.password = ''
+})
+
 
 async function getUserInfo(){
 
@@ -55,22 +77,77 @@ async function getUserInfo(){
 
 }
 
+async function editUser(){
+  const myHeaders = new Headers();
+  myHeaders.append('Authorization', `Bearer ${localStorage.getItem('token')}`);
+  myHeaders.append('Content-Type', 'application/json');
+
+  const options = {
+    method: 'POST',
+    headers: myHeaders,
+    body: JSON.stringify(editUserDataLogin.value),
+  };
+
+  await fetch('http://localhost:8080/api/v1/user/update', options)
+    .then(response => {
+      if(response.status === 401){
+        localStorage.removeItem('token')
+      }else {
+        logout()
+        showEditUser.value = false
+        return response.json()
+      }
+    })
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
+  console.log(editUserDataLogin.value)
+}
+
+async function editUserPassword(){
+  const myHeaders = new Headers();
+  myHeaders.append('Authorization', `Bearer ${localStorage.getItem('token')}`);
+  myHeaders.append('Content-Type', 'application/json');
+
+  const options = {
+    method: 'POST',
+    headers: myHeaders,
+    body: JSON.stringify(editUserDataPassword.value),
+  };
+
+  await fetch('http://localhost:8080/api/v1/user/update-password', options)
+    .then(response => {
+      if(response.status === 401){
+        localStorage.removeItem('token')
+      }else {
+        logout()
+        showEditUserPassword.value = false
+        return response.json()
+      }
+    })
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+}
+
 function openAboutUserData(){
-  showAboutUser.value = true
-  getUserInfo()
+  showEditUser.value = true
+  checkToken()
 }
 
 function checkToken() {
   const token = localStorage.getItem('token')
   if (token) {
+    console.log(token)
     isLogin.value = true
+    getUserInfo()
   } else {
+    console.log(token)
     isLogin.value = false
   }
 }
 
-function login(){
 
+function login(){
   const jsonData = JSON.stringify(loginData)
 
   fetch('http://localhost:8080/api/v1/auth/authenticate', {
@@ -83,16 +160,17 @@ function login(){
     .then(response => response.json())
     .then(data => {
       if( data.status === 401){
-        console.log(data)
+        showMassage('Некоректні дані', 'error')
       }else {
         console.log('Success:', data);
         localStorage.setItem("token", data.token)
         localStorage.setItem("role", data.rolesList)
         checkToken()
+        authIsVisible.value = false
       }
-      console.log(data)
     })
     .catch(error => {
+      showMassage('Некоректні дані', 'info')
       console.error('Error:', error);
     });
 }
@@ -166,6 +244,49 @@ function resetSelectedCategory() {
   getAllProgram()
 }
 
+function logout(){
+  localStorage.removeItem('token')
+  localStorage.removeItem('roles')
+  checkToken()
+  showEditUser.value = false
+  showEditUserPassword.value = false
+}
+
+async function saveUser(){
+  if (loginData.login  === '' && loginData.password === ''){
+    showMassage('Поля не можуть бути пустими!!!', 'error')
+  }else {
+    const myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+
+    const registerUserData = {
+      login: loginData.login,
+      password: loginData.password,
+      role: {
+        roleId: 2
+      }
+    };
+
+    const options = {
+      method: 'POST',
+      headers: myHeaders,
+      body: JSON.stringify(registerUserData),
+    };
+
+    await fetch('http://localhost:8080/api/v1/auth/register', options)
+      .then(response => {
+        if(response.status === 401){
+          localStorage.removeItem('token')
+        }else {
+          return response.json()
+          authIsVisible.value = false
+        }
+      })
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
+  }
+}
+
 onMounted(() => {
   getAllCategoryFunction()
   getAllProgram()
@@ -192,10 +313,12 @@ watch(selectedCategory, () => {
   getAllProgramByCategory()
 })
 
+
 </script>
 
 <template>
 
+  <Toast />
 
   <Dialog v-model:visible="authIsVisible" modal header="Авторизація/Реєстрація" :style="{ width: '25rem' }">
     <span class="text-surface-600 dark:text-surface-0/70 block mb-5">Авторизація потрібно для того щоб була можливість класти відгуки.</span>
@@ -209,23 +332,31 @@ watch(selectedCategory, () => {
     </div>
     <div class="flex justify-end gap-2">
       <Button @click="login" type="button" label="Авторизація"></Button>
-      <Button type="button" label="Реєстрація"></Button>
+      <Button @click="saveUser" type="button" label="Реєстрація"></Button>
     </div>
   </Dialog>
 
-  <Dialog v-model:visible="showAboutUser" modal header="Edit Profile" :style="{ width: '25rem' }">
-    <span class="text-surface-600 dark:text-surface-0/70 block mb-5">Update your information.</span>
-    <div class="flex items-center gap-3 mb-3">
-      <label for="username" class="font-semibold w-[6rem]">Логін</label>
-      <InputText v-model:="currentUser.login" id="username" class="flex-auto" autocomplete="off" />
-    </div>
+  <Dialog v-model:visible="showEditUserPassword" modal header="Редагування" :style="{ width: '25rem' }">
+    <span class="text-surface-600 dark:text-surface-0/70 block mb-5">Змінна пароля</span>
     <div class="flex items-center gap-3 mb-5">
-      <label for="password" class="font-semibold w-[6rem]">Пароль</label>
-      <Password v-model="currentUser.password" id="password" toggleMask />
+      <label for="email" class="font-semibold w-[6rem]">Пароль</label>
+      <InputText v-model:="editUserDataPassword.password" id="email" class="flex-auto" autocomplete="off" />
     </div>
     <div class="flex justify-end gap-2">
-      <Button @click="login" type="button" label="Авторизація"></Button>
-      <Button type="button" label="Реєстрація"></Button>
+      <Button type="button" icon="pi pi-check" @click="editUserPassword()"></Button>
+    </div>
+  </Dialog>
+
+  <Dialog v-model:visible="showEditUser" modal header="Редагування" :style="{ width: '25rem' }">
+    <span class="text-surface-600 dark:text-surface-0/70 block mb-5">Редагування користувача</span>
+    <div class="flex items-center gap-3 mb-3">
+      <label for="username" class="font-semibold w-[6rem]">Лоігн</label>
+      <InputText v-model:="editUserDataLogin.login" id="username" class="flex-auto" autocomplete="off" />
+    </div>
+    <div class="flex justify-end gap-2">
+      <Button type="button" label="Змінити пароль" @click="showEditUserPassword = true"></Button>
+      <Button type="button" label="Зберегти" @click="editUser()"></Button>
+      <Button type="button" label="Вийти з аккаунту" @click="logout()"></Button>
     </div>
   </Dialog>
 
@@ -235,7 +366,7 @@ watch(selectedCategory, () => {
       <InputText v-model:="searchProgram" placeholder="Пошук" class="w-full" />
     </div>
     <div class="p-2">
-      <Button v-if="!isLogin" @click="authIsVisible = true" icon="pi pi-user"/>
+      <Button v-tooltip="'Авторизація потрібна для можливості залишати відгуки для додатків'" v-if="!isLogin" @click="authIsVisible = true" icon="pi pi-user"/>
       <Button @click="openAboutUserData" v-if="isLogin" :label="currentUser.login" icon="pi pi-user"/>
     </div>
   </div>

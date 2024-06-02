@@ -70,7 +70,7 @@ async function getAverageRating() {
     method: 'GET'
   };
 
-  const response = await fetch(`http://localhost:8080/api/v1/comment/average/${props.programId}`, options);
+  const response = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/comment/average/${props.programId}`, options);
   const data = await response.json();
   averageRating.value = data.averageRating;
 }
@@ -86,7 +86,7 @@ async function getUserInfo(){
     headers: myHeaders
   };
 
-  createComment.value.user = await fetch('http://localhost:8080/api/v1/user/user-info', options)
+  createComment.value.user = await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/user/user-info', options)
     .then(response => response)
     .then(response => response.json())
     .then(data => data)
@@ -106,7 +106,7 @@ async function saveComment(){
     body: JSON.stringify(createComment.value),
   };
 
-  await fetch('http://localhost:8080/api/v1/comment/save', options)
+  await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/comment/save', options)
     .then(response => {
       if(response.status === 401){
         localStorage.removeItem('token')
@@ -127,7 +127,7 @@ async function getAllComment() {
     method: 'GET',
   };
 
-  const response = await fetch(`http://localhost:8080/api/v1/comment/program/${props.programId}?size=6&page=${commentPage.value}&sort=addedAt,${selectedSortByTime.value.type}`, options);
+  const response = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/comment/program/${props.programId}?size=6&page=${commentPage.value}&sort=addedAt,${selectedSortByTime.value.type}`, options);
   if (response.status === 401) {
     localStorage.removeItem('token');
   } else {
@@ -152,7 +152,7 @@ async function deleteComment(comment) {
     body: JSON.stringify(comment),
   }
 
-  await fetch(`http://localhost:8080/api/v1/comment/remove`, options)
+  await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/comment/remove`, options)
     .then(response => {
       if (response.status === 401) {
         localStorage.removeItem('token')

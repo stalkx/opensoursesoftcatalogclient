@@ -70,7 +70,7 @@ async function getUserInfo(){
     headers: myHeaders
   };
 
-  currentUser.value = await fetch('http://localhost:8080/api/v1/user/user-info', options)
+  currentUser.value = await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/user/user-info', options)
     .then(response => response)
     .then(response => response.json())
     .then(data => data)
@@ -88,7 +88,7 @@ async function editUser(){
     body: JSON.stringify(editUserDataLogin.value),
   };
 
-  await fetch('http://localhost:8080/api/v1/user/update', options)
+  await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/user/update', options)
     .then(response => {
       if(response.status === 401){
         localStorage.removeItem('token')
@@ -115,7 +115,7 @@ async function editUserPassword(){
     body: JSON.stringify(editUserDataPassword.value),
   };
 
-  await fetch('http://localhost:8080/api/v1/user/update-password', options)
+  await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/user/update-password', options)
     .then(response => {
       if(response.status === 401){
         localStorage.removeItem('token')
@@ -150,7 +150,7 @@ function checkToken() {
 function login(){
   const jsonData = JSON.stringify(loginData)
 
-  fetch('http://localhost:8080/api/v1/auth/authenticate', {
+  fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/auth/authenticate', {
     method: 'POST',
     body: jsonData,
     headers: {
@@ -183,7 +183,7 @@ async function searchProgramByName(){
       method: 'GET'
     };
 
-    programResponse.value = await fetch(`http://localhost:8080/api/v1/program/search/${searchProgram.value}?size=4&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
+    programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program/search/${searchProgram.value}?size=4&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
       .then(response => response)
       .then(response => response.json())
       .then(data => data)
@@ -197,7 +197,7 @@ async function getAllProgram(){
     method: 'GET',
   };
 
-  programResponse.value = await fetch(`http://localhost:8080/api/v1/program?size=6&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
+  programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program?size=6&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
     .then(response => {
       if (response.status === 401){
         localStorage.removeItem('token')
@@ -215,7 +215,7 @@ async function getAllProgramByCategory(){
     method: 'GET',
   };
 
-  programResponse.value = await fetch(`http://localhost:8080/api/v1/program/category/${selectedCategory.value.categoryId}?size=6&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
+  programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program/category/${selectedCategory.value.categoryId}?size=6&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
     .then(response => {
       if (response.status === 401){
         localStorage.removeItem('token')
@@ -232,7 +232,7 @@ async function getAllCategoryFunction(){
     method: 'GET',
   };
 
-  categoryData.value = await fetch('http://localhost:8080/api/v1/category', options)
+  categoryData.value = await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/category', options)
     .then(response => response)
     .then(response => response.json())
     .then(data => data)
@@ -273,7 +273,7 @@ async function saveUser(){
       body: JSON.stringify(registerUserData),
     };
 
-    await fetch('http://localhost:8080/api/v1/auth/register', options)
+    await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/auth/register', options)
       .then(response => {
         if(response.status === 401){
           localStorage.removeItem('token')

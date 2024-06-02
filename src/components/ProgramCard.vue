@@ -14,6 +14,11 @@ import TabPanel from 'primevue/tabpanel';
 import Rating from 'primevue/rating'
 import Paginator from 'primevue/paginator'
 import Dropdown from 'primevue/dropdown';
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast';
+
+
+const toast = useToast();
 
 
 const averageRating = ref(0)
@@ -57,6 +62,10 @@ const typeSort = ref([
 ]);
 const currentUser = ref({})
 
+
+const showMassage = (text, severity) => {
+  toast.add({ severity: severity, summary: 'Повідомлення', detail: text, life: 3000 });
+};
 
 
 // Додайте нову функцію для форматування дати
@@ -113,6 +122,7 @@ async function saveComment(){
       }else {
         getAverageRating()
         getAllComment()
+        showMassage('Відгук успішно доданий', 'success')
         return response.json()
       }
     })
@@ -158,6 +168,7 @@ async function deleteComment(comment) {
         localStorage.removeItem('token')
       } else {
         getAllComment()
+        getAverageRating()
         return response.json()
       }
     })
@@ -195,9 +206,10 @@ watch(commentPage, () => {
 </script>
 
 <template>
+  <Toast/>
   <Dialog v-model:visible="readMoreProgramDialog" modal :header="props.programName" :style="{ width: '83.333333%' }">
     <div class="flex flex-row gap-5 border-b w-full p-2">
-      <div class="border rounded p-2">
+      <div class="border rounded p-2 flex items-center">
         <Image :src="props.programIconUrl" width="250" alt="Image" preview />
       </div>
       <div>
@@ -249,7 +261,7 @@ watch(commentPage, () => {
     <div>
       <TabView>
         <TabPanel header="Опис додатку">
-          <div class="prose" v-html="props.programDescription"></div>
+          <div class="prose" :style="'max-width: 100%;'" v-html="props.programDescription"></div>
         </TabPanel>
         <TabPanel header="Відгуки">
 

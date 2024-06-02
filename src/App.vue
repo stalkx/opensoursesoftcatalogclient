@@ -37,6 +37,20 @@ const currentUser = ref({})
 
 const isLogin = ref(false)
 
+const selectedCountProgram = ref({
+  number: 6
+})
+
+const countOfProgram = ref([])
+
+onMounted(() => {
+  for (let i = 1; i < 18; i++) {
+    countOfProgram.value.push({
+      number: i
+    })
+  }
+})
+
 
 const loginData = reactive({
   login: '',
@@ -47,15 +61,32 @@ const showEditUser = ref(false)
 const showEditUserPassword = ref(false)
 
 
-const editUserDataLogin = ref({})
-const editUserDataPassword = ref({})
+const editUserDataLogin = ref({
+  userId: null,
+  login: null,
+  password: null,
+  roles: null
+})
+const editUserDataPassword = ref({
+  userId: null,
+  login: null,
+  password: null,
+  roles: null
+})
 
 
 
 watch(currentUser, () => {
-  editUserDataLogin.value = currentUser.value;
-  editUserDataPassword.value = currentUser.value
+  editUserDataLogin.value.userId = currentUser.value.userId
+  editUserDataLogin.value.login = currentUser.value.login
+  editUserDataLogin.value.password = currentUser.value.password
+  editUserDataLogin.value.roles = currentUser.value.roles
+
+
+  editUserDataPassword.value.userId = currentUser.value.userId
+  editUserDataPassword.value.login = currentUser.value.login
   editUserDataPassword.value.password = ''
+  editUserDataPassword.value.roles = currentUser.value.roles
 })
 
 
@@ -183,7 +214,7 @@ async function searchProgramByName(){
       method: 'GET'
     };
 
-    programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program/search/${searchProgram.value}?size=4&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
+    programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program/search/${searchProgram.value}?size=${selectedCountProgram.value.number}&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
       .then(response => response)
       .then(response => response.json())
       .then(data => data)
@@ -197,7 +228,7 @@ async function getAllProgram(){
     method: 'GET',
   };
 
-  programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program?size=6&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
+  programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program?size=${selectedCountProgram.value.number}&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
     .then(response => {
       if (response.status === 401){
         localStorage.removeItem('token')
@@ -215,7 +246,7 @@ async function getAllProgramByCategory(){
     method: 'GET',
   };
 
-  programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program/category/${selectedCategory.value.categoryId}?size=6&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
+  programResponse.value = await fetch(`https://opensourcesoftcatalog-production.up.railway.app/api/v1/program/category/${selectedCategory.value.categoryId}?size=${selectedCountProgram.value.number}&page=${pageNumber.value}&sort=addedAt,${selectedSortByTime.value.type}`, options)
     .then(response => {
       if (response.status === 401){
         localStorage.removeItem('token')
@@ -300,7 +331,9 @@ watch(pageNumber, () => {
 watch(selectedSortByTime, () => {
   if (selectedCategory.value) {
     getAllProgramByCategory()
-  } else {
+  } else if (searchProgram.value){
+    searchProgramByName()
+  }else {
     getAllProgram()
   }
 })
@@ -311,6 +344,16 @@ watch(searchProgram, () => {
 
 watch(selectedCategory, () => {
   getAllProgramByCategory()
+})
+
+watch(selectedCountProgram, () => {
+  if (selectedCategory.value) {
+    getAllProgramByCategory()
+  } else if (searchProgram.value){
+    searchProgramByName()
+  }else {
+    getAllProgram()
+  }
 })
 
 
@@ -379,6 +422,7 @@ watch(selectedCategory, () => {
       <div class="flex flex-row gap-2">
         <Dropdown v-model="selectedCategory" :options="categoryData.content" optionLabel="categoryName" placeholder="Виберіть категорію" class="w-full md:w-[14rem]" />
         <Dropdown v-model="selectedSortByTime" :options="typeSort" optionLabel="name" placeholder="Тип сортування" class="w-full md:w-[14rem]" />
+        <Dropdown v-tooltip="'Кількість додатків на одній сторінці'" v-model="selectedCountProgram" :options="countOfProgram" optionLabel="number" placeholder="Тип сортування" class="w-full md:w-[14rem]" />
       </div>
     </div>
     <div class="m-5">

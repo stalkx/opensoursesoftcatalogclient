@@ -123,6 +123,7 @@ async function saveComment(){
         getAverageRating()
         getAllComment()
         showMassage('Відгук успішно доданий', 'success')
+        showAddComment.value = false
         return response.json()
       }
     })
@@ -167,6 +168,7 @@ async function deleteComment(comment) {
       if (response.status === 401) {
         localStorage.removeItem('token')
       } else {
+        showMassage('Відгук успішно видалений', 'success')
         getAllComment()
         getAverageRating()
         return response.json()
@@ -181,8 +183,6 @@ function goToDownload() {
 }
 
 onMounted(() => {
-  getAverageRating()
-  getAllComment()
 
   if (props.isLogin){
     getUserInfo()
@@ -192,6 +192,9 @@ onMounted(() => {
     const date = new Date(props.addedAt)
     formattedAddedAt.value = format(date, 'dd-MM-yyyy HH:mm')
   }
+
+  getAverageRating()
+  getAllComment()
 
 })
 

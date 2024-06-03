@@ -126,6 +126,7 @@ async function editUser(){
       }else {
         logout()
         showEditUser.value = false
+        showMassage('Логін успішно змінений, тепер ви можете пройти авторизацію з новим логіном', 'success')
         return response.json()
       }
     })
@@ -136,28 +137,33 @@ async function editUser(){
 }
 
 async function editUserPassword(){
-  const myHeaders = new Headers();
-  myHeaders.append('Authorization', `Bearer ${localStorage.getItem('token')}`);
-  myHeaders.append('Content-Type', 'application/json');
+  if (editUserDataPassword.value.password === ''){
+    showMassage('Поле паролю не може бути пустим', 'error')
+  }else {
+    const myHeaders = new Headers();
+    myHeaders.append('Authorization', `Bearer ${localStorage.getItem('token')}`);
+    myHeaders.append('Content-Type', 'application/json');
 
-  const options = {
-    method: 'POST',
-    headers: myHeaders,
-    body: JSON.stringify(editUserDataPassword.value),
-  };
+    const options = {
+      method: 'POST',
+      headers: myHeaders,
+      body: JSON.stringify(editUserDataPassword.value),
+    };
 
-  await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/user/update-password', options)
-    .then(response => {
-      if(response.status === 401){
-        localStorage.removeItem('token')
-      }else {
-        logout()
-        showEditUserPassword.value = false
-        return response.json()
-      }
-    })
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
+    await fetch('https://opensourcesoftcatalog-production.up.railway.app/api/v1/user/update-password', options)
+      .then(response => {
+        if(response.status === 401){
+          localStorage.removeItem('token')
+        }else {
+          logout()
+          showEditUserPassword.value = false
+          showMassage('Пароль успішно змінений, тепер ви можете пройти авторизацію з новим паролем', 'success')
+          return response.json()
+        }
+      })
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
+  }
 }
 
 function openAboutUserData(){
@@ -197,6 +203,8 @@ function login(){
         localStorage.setItem("token", data.token)
         localStorage.setItem("role", data.rolesList)
         checkToken()
+        getAllProgram()
+        reloadPage()
         authIsVisible.value = false
       }
     })
@@ -281,6 +289,8 @@ function logout(){
   checkToken()
   showEditUser.value = false
   showEditUserPassword.value = false
+  getAllProgram()
+  reloadPage()
 }
 
 async function saveUser(){
@@ -308,7 +318,10 @@ async function saveUser(){
       .then(response => {
         if(response.status === 401){
           localStorage.removeItem('token')
+        }else if (response.status === 400){
+          showMassage('Користувач з таким логіном уже існує!!!!', 'error')
         }else {
+          showMassage('Аккаунт успішно створений, пройдіть авторизацію', 'success')
           return response.json()
           authIsVisible.value = false
         }
@@ -316,6 +329,10 @@ async function saveUser(){
       .then(data => console.log(data))
       .catch(error => console.error(error));
   }
+}
+
+function reloadPage() {
+  window.location.reload();
 }
 
 onMounted(() => {
@@ -356,6 +373,10 @@ watch(selectedCountProgram, () => {
   }
 })
 
+
+watch(programResponse, () => {
+  console.log('AAAAAAAAAAAAAA')
+})
 
 </script>
 

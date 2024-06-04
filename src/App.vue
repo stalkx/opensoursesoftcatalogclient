@@ -290,7 +290,7 @@ function logout(){
   showEditUser.value = false
   showEditUserPassword.value = false
   getAllProgram()
-  reloadPage()
+  reloadPage() 
 }
 
 async function saveUser(){
@@ -385,7 +385,7 @@ watch(programResponse, () => {
   <Toast />
 
   <Dialog v-model:visible="authIsVisible" modal header="Авторизація/Реєстрація" :style="{ width: '25rem' }">
-    <span class="text-surface-600 dark:text-surface-0/70 block mb-5">Авторизація потрібно для того щоб була можливість класти відгуки.</span>
+    <span class="text-surface-600 dark:text-surface-0/70 block mb-5">Авторизація потрібна для того щоб була можливість залишати відгуки.</span>
     <div class="flex items-center gap-3 mb-3">
       <label for="username" class="font-semibold w-[6rem]">Логін</label>
       <InputText v-model:="loginData.login" id="username" class="flex-auto" autocomplete="off" />
